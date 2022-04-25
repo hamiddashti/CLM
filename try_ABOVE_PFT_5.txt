@@ -1,0 +1,151 @@
+## try ABoVE
+
+export domainPath=/home/groups/chen_group/mengluo/ABoVE_Demeter_CLM/
+export domainFile=domain_ABOVE_025_v1_c220315.nc
+export surfdataFile=surfdata_ABOVE_025_v1_c220328.nc
+export landuseFile=landuse.timeseries_ABOVE_025_SSP126_c220328.nc
+
+export RES=CLM_USRDAT
+export COMPSET=SSP126_DATM%GSWP3v1_CLM50%BGC_SICE_SOCN_RTM_SGLC_SWAV
+export COMPILER=gnu
+export MACH=chtc
+export CASE_NAME=/home/groups/chen_group/mengluo/ABoVE_CLM_Demeter_2015_2100_1
+
+cd /home/groups/chen_group/CLM/clm5.0/cime/scripts
+./create_newcase --compset ${COMPSET} --res ${RES} --case ${CASE_NAME} --compiler ${COMPILER} --mach ${MACH}  --run-unsupported
+cd ${CASE_NAME}
+
+./xmlchange DATM_MODE="CLMGSWP3v1",DATM_CLMNCEP_YR_START='2015',DATM_CLMNCEP_YR_END='2100'
+
+./xmlchange LND_DOMAIN_FILE=${domainFile} 
+./xmlchange ATM_DOMAIN_FILE=${domainFile} 
+./xmlchange LND_DOMAIN_PATH=${domainPath}
+./xmlchange ATM_DOMAIN_PATH=${domainPath}
+
+./xmlchange NTASKS=256,STOP_N=15,STOP_OPTION=nyears,JOB_WALLCLOCK_TIME="20:00:00",RUN_STARTDATE="2015-01-01",REST_N=5,REST_OPTION=nyears,RESUBMIT=6
+#./xmlchange JOB_QUEUE=pre
+./xmlchange CIME_OUTPUT_ROOT=/home/groups/chen_group/CESM/output
+cat >> user_nl_clm << EOF
+finidat  = '/home/groups/chen_group/CESM/output/try_ABoVE_clm_2022_28_monthly/run/try_ABoVE_clm_2022_28_monthly.clm2.r.2015-01-01-00000.nc'
+hist_nhtfrq = 0,-8760
+hist_mfilt  = 12,1
+hist_empty_htapes = .true.
+hist_fincl1 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX', 'DWT_CLOSS'
+ hist_fincl2 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX', 'DWT_CLOSS'
+
+
+fsurdat = '${domainPath}${surfdataFile}'
+flanduse_timeseries = '${domainPath}${landuseFile}'
+check_dynpft_consistency = .false.
+EOF
+
+./case.setup
+srun -n1 -N1 -p pre --time=20:00:00 ./case.build
+echo SUCCESS
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+
+files1=""
+for i in {2015..2100}
+do
+   for j in {1..12}
+   do
+      if [ $j -lt 10 ];
+      then
+         files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Prec.$i-0$j.nc\n"
+      else
+	    if [ $i -eq 2100 ] && [ $j -eq 12 ];
+		then
+		  files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Prec.$i-$j.nc"
+		else
+         files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Prec.$i-$j.nc\n"
+		fi
+      fi
+   done
+done
+
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Precip ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Precip@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/Precip@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.Prec.2015-01.nc@${files1}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+files2=""
+for i in {2015..2100}
+do
+   for j in {1..12}
+   do
+      if [ $j -lt 10 ];
+      then
+         files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Solr.$i-0$j.nc\n"
+      else
+	   if [ $i -eq 2100 ] && [ $j -eq 12 ];
+		then
+         files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Solr.$i-$j.nc"
+		 else
+		 files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_ssp126.Solr.$i-$j.nc\n"
+		 fi
+      fi
+   done
+done
+
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Solar ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Solar@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/Solar@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.Solr.2015-01.nc@${files2}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+files3=""
+for i in {2015..2100}
+do
+   for j in {1..12}
+   do
+      if [ $j -lt 10 ];
+      then
+         files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_ssp126.TPQWL.$i-0$j.nc\n"
+      else
+	   if [ $i -eq 2100 ] && [ $j -eq 12 ];
+		then
+         files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_ssp126.TPQWL.$i-$j.nc"
+		 else
+		 files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_ssp126.TPQWL.$i-$j.nc\n"
+		 fi
+      fi
+   done
+done
+
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.TPQW ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+sed '34,212d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/TPHWL@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.TPQWL.2015-01.nc@${files3}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+
+
+./case.submit
+
+echo SUCCESS
+
+
