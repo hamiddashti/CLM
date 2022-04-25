@@ -67,7 +67,7 @@ done
 
 cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Precip ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
-sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+sed '30,1060d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
 rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
 export LC_CTYPE=en_US.UTF-8
@@ -99,7 +99,7 @@ done
 
 cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Solar ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
-sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+sed '30,1060d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
 rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
 export LC_CTYPE=en_US.UTF-8
@@ -131,7 +131,7 @@ done
 
 cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.TPQW ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
-sed '34,212d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+sed '34,1064d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
 rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
 chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
 export LC_CTYPE=en_US.UTF-8
