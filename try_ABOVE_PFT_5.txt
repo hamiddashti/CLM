@@ -30,9 +30,9 @@ finidat  = '/home/groups/chen_group/CESM/output/try_ABoVE_clm_2022_28_monthly/ru
 hist_nhtfrq = 0,-8760
 hist_mfilt  = 12,1
 hist_empty_htapes = .true.
-hist_fincl1 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX', 'DWT_CLOSS'
- hist_fincl2 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX', 'DWT_CLOSS'
-
+hist_fincl1 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX'
+ hist_fincl2 = 'FSA', 'FSR', 'FSH', 'EFLX_LH_TOT', 'FPSN', 'GPP', 'NPP', 'NEP', 'NEE', 'SR', 'AR', 'HR', 'ER', 'LEAFC', 'LIVESTEMC', 'DEADSTEMC', 'SOILC', 'LAND_USE_FLUX'
+# 'DWT_CLOSS'
 
 fsurdat = '${domainPath}${surfdataFile}'
 flanduse_timeseries = '${domainPath}${landuseFile}'
