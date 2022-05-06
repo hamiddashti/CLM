@@ -1,0 +1,24 @@
+cd scripts
+# change the composet
+./create_newcase -case BGC_finalspinup -res f19_g17_gl4 -compset I1850Clm50Bgc
+cd BGC_finalspinup
+# Now, Copy the last CLM restart file from the earlier case into your run directory
+cp /ptmp/$LOGIN/archive/BGC_spinup/rest/BGC_spinup.clm*.r*.0201-01-01-00000.nc \
+/glade/scratch/$LOGIN/CN_finalspinup
+# Set the runtype to startup
+./xmlchange RUN_TYPE=startup
+# And copy the rpointer files for datm and drv from the earlier case
+cp /glade/scratch/$LOGIN/archive/BGC_spinup/rest/rpointer.atm /ptmp/$LOGIN/CN_finalspinup
+cp /glade/scratch/$LOGIN/archive/BGC_spinup/rest/rpointer.drv /ptmp/$LOGIN/CN_finalspinup
+# Set the finidat file to the last restart file saved in previous step
+echo ' finidat = "BGC_spinup.clm2.r.0201-01-01-00000.nc"' 
+user_nl_clm
+# Now setup
+./case.setup
+Now build
+./case.build
+# The following sets RESUBMIT to 7 times in env_run.xml (you could also use an editor)
+# The following sets STOP_N and STOP_OPTION to 50 and "nyears" in env_run.xml (you could also use an editor)
+./xmlchange RESUBMIT=7,STOP_OPTION=nyears,STOP_N=50
+Now run as normal
+./case.submit
