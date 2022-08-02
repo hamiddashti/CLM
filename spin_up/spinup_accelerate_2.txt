@@ -1,0 +1,132 @@
+## try ABoVE
+export domainPath=/home/groups/chen_group/mengluo/ABoVE_FLUS_CLM/
+export domainFile=domain_ABOVE_025_v1_c220315.nc
+export surfdataFile=surfdata_ABOVE_025_v1_c220328.nc
+export RES=CLM_USRDAT
+export COMPSET=2000_DATM%GSWP3v1_CLM50%BGC_SICE_SOCN_RTM_SGLC_SWAV
+export COMPILER=gnu
+export MACH=chtc
+export CASE_NAME=/home/groups/chen_group/mengluo/try_ABoVE_clm_2022_spinup_ACCELERATED_4
+cd /home/groups/chen_group/CLM/clm5.0/cime/scripts
+./create_newcase --compset ${COMPSET} --res ${RES} --case ${CASE_NAME} --compiler ${COMPILER} --mach ${MACH}  --run-unsupported
+cd ${CASE_NAME}
+./xmlchange DATM_MODE="CLMGSWP3v1",DATM_CLMNCEP_YR_START='2000',DATM_CLMNCEP_YR_END='2014'
+./xmlchange LND_DOMAIN_FILE=${domainFile}
+./xmlchange ATM_DOMAIN_FILE=${domainFile}
+./xmlchange LND_DOMAIN_PATH=${domainPath}
+./xmlchange ATM_DOMAIN_PATH=${domainPath}
+#
+./xmlchange CLM_FORCE_COLDSTART=on
+# turn on spinup accelerate
+./xmlchange CLM_ACCELERATED_SPINUP="on"
+./xmlchange NTASKS=256,STOP_N=50,STOP_OPTION=nyears,JOB_WALLCLOCK_TIME="24:00:00",RUN_STARTDATE="0001-01-01",REST_N=50,REST_OPTION=nyears,RESUBMIT=2
+#./xmlchange JOB_QUEUE=pre
+./xmlchange CIME_OUTPUT_ROOT=/home/groups/chen_group/CESM/output
+cat >> user_nl_clm << EOF
+hist_nhtfrq = -8760
+hist_mfilt  = 50
+hist_empty_htapes = .true.
+hist_fincl1 = 'FSA','FSR','FSH','EFLX_LH_TOT','FPSN','GPP','NPP','NEP','NEE','SR','AR','HR','ER'
+fsurdat = '${domainPath}${surfdataFile}'
+do_transient_pfts = .false.
+EOF
+./case.setup
+./case.build
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+files1=""
+for i in {2000..2014}
+do
+for j in {1..12}
+do
+if [ $j -lt 10 ];
+then
+files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_historical.Prec.$i-0$j.nc\n"
+else
+if [ $i -eq 2014 ] && [ $j -eq 12 ];
+then
+files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_historical.Prec.$i-$j.nc"
+else
+files1="${files1}gfdl-esm4_r1i1p1f1_w5e5_historical.Prec.$i-$j.nc\n"
+fi
+fi
+done
+done
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Precip ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Precip@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/Precip@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.Prec.2000-01.nc@${files1}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Precip
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+files2=""
+for i in {2000..2014}
+do
+for j in {1..12}
+do
+if [ $j -lt 10 ];
+then
+files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_historical.Solr.$i-0$j.nc\n"
+else
+if [ $i -eq 2014 ] && [ $j -eq 12 ];
+then
+files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_historical.Solr.$i-$j.nc"
+else
+files2="${files2}gfdl-esm4_r1i1p1f1_w5e5_historical.Solr.$i-$j.nc\n"
+fi
+fi
+done
+done
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.Solar ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+sed '30,208d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Solar@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/Solar@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.Solr.2000-01.nc@${files2}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.Solar
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+files3=""
+for i in {2000..2014}
+do
+for j in {1..12}
+do
+if [ $j -lt 10 ];
+then
+files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_historical.TPQWL.$i-0$j.nc\n"
+else
+if [ $i -eq 2014 ] && [ $j -eq 12 ];
+then
+files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_historical.TPQWL.$i-$j.nc"
+else
+files3="${files3}gfdl-esm4_r1i1p1f1_w5e5_historical.TPQWL.$i-$j.nc\n"
+fi
+fi
+done
+done
+cp ${CASE_NAME}/CaseDocs/datm.streams.txt.CLMGSWP3v1.TPQW ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+sed '34,212d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2 > ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+rm ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW2
+chmod +rw ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+perl -w -i -p -e "s@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL@/home/groups/chen_group/CESM/inputdata/atm/datm7/atm_forcing.GFDL-ESM4-w5e5_c211108/TPHWL@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+perl -w -i -p -e "s@clmforc.GSWP3.c2011.0.5x0.5.TPQWL.2000-01.nc@${files3}@" ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+sed -i '/ZBOT/d' ${CASE_NAME}/user_datm.streams.txt.CLMGSWP3v1.TPQW
+# ---------------------------------------------------------------------------- #
+# **************************************************************************** #
+# ---------------------------------------------------------------------------- #
+./case.submit
+echo SUCCESS
